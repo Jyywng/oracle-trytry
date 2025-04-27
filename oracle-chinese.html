@@ -142,47 +142,51 @@
   }
 
   function showOracle() {
-    const name = document.getElementById("nameInput").value.trim();
-    const line1 = document.getElementById("line1");
-    const line2 = document.getElementById("line2");
-    const line3 = document.getElementById("line3");
-    const audioPlayer = document.getElementById("audioPlayer");
+  const name = document.getElementById("nameInput").value.trim();
+  const line1 = document.getElementById("line1");
+  const line2 = document.getElementById("line2");
+  const line3 = document.getElementById("line3");
+  const audioPlayer = document.getElementById("audioPlayer");
 
-    line1.classList.remove("visible");
-    line2.classList.remove("visible");
-    line3.classList.remove("visible");
+  line1.classList.remove("visible");
+  line2.classList.remove("visible");
+  line3.classList.remove("visible");
 
-    if (name === "") {
-      line1.textContent = "请输入一个名字，";
-      line2.textContent = "才能听见神的回应。";
-      line3.textContent = "";
-      line1.classList.add("visible");
-      line2.classList.add("visible");
-      return;
-    }
+  if (name === "") {
+    line1.textContent = "请输入一个名字，";
+    line2.textContent = "才能听见神的回应。";
+    line3.textContent = "";
+    line1.classList.add("visible");
+    line2.classList.add("visible");
+    return;
+  }
 
-    const [o1, o2, o3] = generateOracleFromName(name);
+  const [o1, o2, o3] = generateOracleFromName(name);
 
-    setTimeout(() => {
-      line1.textContent = o1.text;
-      audioPlayer.src = o1.audio;
-      audioPlayer.play();
-      line1.classList.add("visible");
-    }, 300);
+  setTimeout(() => {
+    line1.textContent = o1.text;
+    audioPlayer.src = 'audio/' + o1.audio;
+    audioPlayer.load();
+    audioPlayer.play().catch(e => console.log('Audio play was prevented:', e));
+    line1.classList.add("visible");
+  }, 300);
 
-    setTimeout(() => {
-      line2.textContent = o2.text;
-      audioPlayer.src = o2.audio;
-      audioPlayer.play();
-      line2.classList.add("visible");
-    }, 5300);
+  setTimeout(() => {
+    line2.textContent = o2.text;
+    audioPlayer.src = 'audio/' + o2.audio;
+    audioPlayer.load();
+    audioPlayer.play().catch(e => console.log('Audio play was prevented:', e));
+    line2.classList.add("visible");
+  }, 5300);
 
-    setTimeout(() => {
-      line3.textContent = o3.text;
-      audioPlayer.src = o3.audio;
-      audioPlayer.play();
-      line3.classList.add("visible");
-    }, 10300);
+  setTimeout(() => {
+    line3.textContent = o3.text;
+    audioPlayer.src = 'audio/' + o3.audio;
+    audioPlayer.load();
+    audioPlayer.play().catch(e => console.log('Audio play was prevented:', e));
+    line3.classList.add("visible");
+  }, 10300);
+}
   }
 </script>
 
