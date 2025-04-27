@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>命定神谕生成器</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'VT323', 'Source Han Serif SC', 'SimSun', monospace;
+      background-color: #0a58ca;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #ffffff;
+    }
+    p {
+      font-size: 18px;
+    }
+    input, button {
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      padding: 6px 12px;
+      margin: 8px;
+      background: #ffffff;
+      color: #000000;
+      border: 2px solid #555;
+      border-radius: 3px;
+    }
+    button:hover {
+      background-color: #e4e4e4;
+    }
+    .oracle {
+      margin-top: 30px;
+      font-size: 16px;
+      line-height: 1.2;
+      white-space: pre-line;
+      text-align: center;
+      width: 400px;
+      padding: 16px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 2px solid #ffffff;
+      box-shadow: 4px 4px 0px #1b2a3d;
+      min-height: 120px;
+      box-sizing: border-box;
+    }
+    .line {
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+      height: 1.2em;
+    }
+    .line.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>命定神谕生成器</h1>
+  <p>输入你的名字：</p>
+  <input type="text" id="nameInput" placeholder="你的名字">
+  <button onclick="showOracle()">召唤神谕</button>
+
+  <div class="oracle">
+    <div class="line" id="line1"></div>
+    <div class="line" id="line2"></div>
+    <div class="line" id="line3"></div>
+  </div>
+
+  <!-- 音频播放器（隐藏的） -->
+  <audio id="audioPlayer" preload="auto"></audio>
+
+<script>
+  const words = [
+    "杏仁", "苦艾", "铁", "满月", "使命", "雾", "琥珀", "洪水", "乳牙", "日影",
+    "碎水晶", "月桂枝", "乌鸦", "玉珠", "靛蓝", "年轮", "赌注", "三叉戟", "白蛇", "十二点",
+    "国境线", "黑猫", "飞蛾", "山羊瞳孔", "太阳神鸟", "白色棋子", "异乡人", "巴别塔", "特洛伊", "西西弗斯"
+  ];
+  const phrases = [
+    "哀悼", "灼烧", "门后", "摆渡", "雨后", "粉碎的旗帜", "心脏搏动", "淘金", "苦", "百鸟沉寂",
+    "咀嚼黑夜", "收集雨水", "丢失的王冠", "失而复得的", "石中剑", "沉睡的蜂群", "泪水凝结成盐",
+    "偷走他的钱袋", "亲吻她的手指", "迷路在旷野", "火光把天空照亮", "未定的归来日", "你经历过的一切",
+    "被咬过一口的苹果", "一百首诗歌", "树的新叶", "我在月光里遗失的", "贪婪", "车辙消失在月色", "沿着掌纹"
+  ];
+  const sentences = [
+    "你们要进窄门", "不要去阁楼", "醒来", "不要遗忘", "跨过他们的遗骨", "我们还会再见",
+    "我们会再见吗", "好吗", "想我了吗", "再见", "杀了他", "明天见", "你听", "他们在说谎",
+    "沉入大海", "死在春夜", "被太阳融化", "无休无止", "祝福你，我的朋友", "谁在呢喃",
+    "回头", "回到原点", "会在梦中相见", "这是谁的眼睛", "闭上眼睛", "雨停了", "穿过山脉",
+    "谎言终结", "烧到只剩灰烬"
+  ];
+
+  function hashStringToNumber(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  }
+
+  function pickFromArrayBySeed(arr, seed) {
+    const index = seed % arr.length;
+    return { value: arr[index], index: index };
+  }
+
+  function chooseDirection(seed) {
+    const directions = ["之上", "之下", "之间", ""];
+    const directionWeights = [0.2, 0.2, 0.2, 0.4];
+    const r = (hashStringToNumber(seed + '_dir') % 100) / 100;
+    let cum = 0;
+    for (let i = 0; i < directions.length; i++) {
+      cum += directionWeights[i];
+      if (r < cum) return directions[i];
+    }
+    return "";
+  }
+
+  function generateOracleFromName(name) {
+    const seed = hashStringToNumber(name);
+    const base = pickFromArrayBySeed(words, seed + 1);
+    const dir = chooseDirection(name);
+    const phrase = pickFromArrayBySeed(phrases, seed + 2);
+    const sentence = pickFromArrayBySeed(sentences, seed + 3);
+
+    const lineA = dir ? `“${base.value}${dir}”` : `“${base.value}”`;
+    const lineB = `“${phrase.value}”`;
+    const lineC = `“${sentence.value}”`;
+
+    return [
+      { text: lineA, audio: `word-${base.index}.mp3` },
+      { text: lineB, audio: `phrase-${phrase.index}.mp3` },
+      { text: lineC, audio: `sentence-${sentence.index}.mp3` }
+    ];
+  }
+
+  function showOracle() {
+    const name = document.getElementById("nameInput").value.trim();
+    const line1 = document.getElementById("line1");
+    const line2 = document.getElementById("line2");
+    const line3 = document.getElementById("line3");
+    const audioPlayer = document.getElementById("audioPlayer");
+
+    line1.classList.remove("visible");
+    line2.classList.remove("visible");
+    line3.classList.remove("visible");
+
+    if (name === "") {
+      line1.textContent = "请输入一个名字，";
+      line2.textContent = "才能听见神的回应。";
+      line3.textContent = "";
+      line1.classList.add("visible");
+      line2.classList.add("visible");
+      return;
+    }
+
+    const [o1, o2, o3] = generateOracleFromName(name);
+
+    setTimeout(() => {
+      line1.textContent = o1.text;
+      audioPlayer.src = o1.audio;
+      audioPlayer.play();
+      line1.classList.add("visible");
+    }, 300);
+
+    setTimeout(() => {
+      line2.textContent = o2.text;
+      audioPlayer.src = o2.audio;
+      audioPlayer.play();
+      line2.classList.add("visible");
+    }, 5300);
+
+    setTimeout(() => {
+      line3.textContent = o3.text;
+      audioPlayer.src = o3.audio;
+      audioPlayer.play();
+      line3.classList.add("visible");
+    }, 10300);
+  }
+</script>
+
+</body>
+</html>
